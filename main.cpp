@@ -38,7 +38,7 @@ double raycast(Point start, double angle)
 {
     double angleRadians = angle * M_PI / 180.0;
 
-    double stepSize = 0.1; // Step size for ray casting
+    double stepSize = 1; // Step size for ray casting
     double x = start.x;
     double y = start.y;
 
@@ -147,7 +147,7 @@ int main(int argc, char **argv)
         //draw player
         SDL_Rect player = {(int)playerPos.x, (int)playerPos.y, PLAYER_SIZE, PLAYER_SIZE};
         SDL_RenderCopyEx(renderer, texture, nullptr, &player, angle, nullptr, SDL_FLIP_NONE);
-        const int FOV = 20;
+        const int FOV = 50;
         for (int i = angle - FOV; i < angle + FOV; i++) drawLine(renderer, (int)playerPos.x + PLAYER_SIZE/2, (int)playerPos.y + PLAYER_SIZE/2, i, raycast({playerPos.x + PLAYER_SIZE/2, playerPos.y + PLAYER_SIZE/2}, i));
 
         //raycasting DDA
