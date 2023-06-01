@@ -52,16 +52,17 @@ double raycast(Point start, double angle)
     double fSy = remaindery * cellHeight * sin(angle*M_PI/180);
     double fSx = remainderx * cellWidth * cos(angle*M_PI/180);
     double raysizex, raysizey;
+    std::cout << (int)(testpos.x/cellWidth) << " " << (int)(testpos.y/cellHeight) << " " << map[(int)(testpos.x/cellWidth)][(int)(testpos.y/cellHeight)] << std::endl;
+    std::cout << map[6][7] << std::endl;
     testpos.x += fSx;
     //something is very very wrong :)))
-    if (map[(int)(testpos.x/cellWidth)][(int)(testpos.y/cellHeight)])
+    if (map[(int)(testpos.y/cellWidth)][(int)(testpos.x/cellHeight)])
     {
         raysizex = sqrt( pow(testpos.x - start.x, 2) + pow( testpos.y - start.y, 2) );
-        std::cout << raysizex << std::endl;
         return raysizex;
     }
     testpos.y += fSy;
-    if (map[(int)(testpos.x/cellWidth)][(int)(testpos.y/cellHeight)])
+    if (map[(int)(testpos.y/cellWidth)][(int)(testpos.x/cellHeight)])
     {
         raysizey = sqrt( pow(testpos.x - start.x, 2) + pow( testpos.y - start.y, 2) );
         return raysizey;
@@ -69,10 +70,11 @@ double raycast(Point start, double angle)
     int its = 0;
     while (its < 100)
     {
+        //std::cout << testpos.x << std::endl;
         if (raysizey < raysizex)
         {
             testpos.y += Sy;
-            if (map[(int)(testpos.x/cellWidth)][(int)(testpos.y/cellHeight)])
+            if (map[(int)(testpos.y/cellWidth)][(int)(testpos.x/cellHeight)])
             {
                 raysizey = sqrt( pow(testpos.x - start.x, 2) + pow( testpos.y - start.y, 2) );
                 return raysizey;
@@ -81,7 +83,7 @@ double raycast(Point start, double angle)
         else
         {
             testpos.x += Sx;
-            if (map[(int)(testpos.x/cellWidth)][(int)(testpos.y/cellHeight)])
+            if (map[(int)(testpos.y/cellWidth)][(int)(testpos.x/cellHeight)])
             {
                 raysizex = sqrt( pow(testpos.x - start.x, 2) + pow( testpos.y - start.y, 2) );
                 return raysizex;
