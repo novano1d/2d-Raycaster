@@ -20,17 +20,9 @@ Point drawLine(SDL_Renderer* renderer, int startX, int startY, double angle, int
     return {endX, endY};
 }
 
-bool isIntersecting(Point p1, Point p2, Point q1, Point q2) {
-    return (((q1.x-p1.x)*(p2.y-p1.y) - (q1.y-p1.y)*(p2.x-p1.x))
-            * ((q2.x-p1.x)*(p2.y-p1.y) - (q2.y-p1.y)*(p2.x-p1.x)) < 0)
-            &&
-           (((p1.x-q1.x)*(q2.y-q1.y) - (p1.y-q1.y)*(q2.x-q1.x))
-            * ((p2.x-q1.x)*(q2.y-q1.y) - (p2.y-q1.y)*(q2.x-q1.x)) < 0);
-}
-
 //screen params
-const int SCREEN_WIDTH = 640;
-const int SCREEN_HEIGHT = 480;
+const int SCREEN_WIDTH = 600;
+const int SCREEN_HEIGHT = 600;
 
 //grid params
 const int GRID_ROWS = 8;
@@ -39,61 +31,40 @@ bool map[GRID_ROWS][GRID_COLS] = {false};
 int cellWidth = SCREEN_WIDTH / GRID_COLS;
 int cellHeight = SCREEN_HEIGHT / GRID_ROWS;
 const int PLAYER_SIZE = 20;
-//const int SPEED = 10;
+const int SPEED = 10;
 
 //dda raycast implementation
 double raycast(Point start, double angle)
 {
-    Point testpos = start;
-    double Sy = cellHeight * sin(angle*M_PI/180);
-    double Sx = cellWidth * cos(angle*M_PI/180);
-    double remainderx = start.x - (int)start.x; //find scale of first cell
-    double remaindery = start.y - (int)start.y;
-    double fSy = remaindery * cellHeight * sin(angle*M_PI/180);
-    double fSx = remainderx * cellWidth * cos(angle*M_PI/180);
-    double raysizex, raysizey;
-    std::cout << (int)(testpos.x/cellWidth) << " " << (int)(testpos.y/cellHeight) << " " << map[(int)(testpos.x/cellWidth)][(int)(testpos.y/cellHeight)] << std::endl;
-    std::cout << map[6][7] << std::endl;
-    testpos.x += fSx;
-    //something is very very wrong :)))
-    if (map[(int)(testpos.y/cellWidth)][(int)(testpos.x/cellHeight)])
+    double angleRadians = angle * M_PI / 180.0;
+
+    double stepSize = 0.1; // Step size for ray casting
+    double x = start.x;
+    double y = start.y;
+
+    double dx = cos(angleRadians) * stepSize;
+    double dy = sin(angleRadians) * stepSize;
+
+    while (x >= 0 && x < SCREEN_WIDTH && y >= 0 && y < SCREEN_HEIGHT)
     {
-        raysizex = sqrt( pow(testpos.x - start.x, 2) + pow( testpos.y - start.y, 2) );
-        return raysizex;
-    }
-    testpos.y += fSy;
-    if (map[(int)(testpos.y/cellWidth)][(int)(testpos.x/cellHeight)])
-    {
-        raysizey = sqrt( pow(testpos.x - start.x, 2) + pow( testpos.y - start.y, 2) );
-        return raysizey;
-    }
-    int its = 0;
-    while (its < 100)
-    {
-        //std::cout << testpos.x << std::endl;
-        if (raysizey < raysizex)
+        int gridX = static_cast<int>(x) / cellWidth;
+        int gridY = static_cast<int>(y) / cellHeight;
+
+        if (map[gridY][gridX])
         {
-            testpos.y += Sy;
-            if (map[(int)(testpos.y/cellWidth)][(int)(testpos.x/cellHeight)])
-            {
-                raysizey = sqrt( pow(testpos.x - start.x, 2) + pow( testpos.y - start.y, 2) );
-                return raysizey;
-            }
+            // Hit a wall, calculate the distance from the start point
+            double distance = sqrt(pow(x - start.x, 2) + pow(y - start.y, 2));
+            return distance;
         }
-        else
-        {
-            testpos.x += Sx;
-            if (map[(int)(testpos.y/cellWidth)][(int)(testpos.x/cellHeight)])
-            {
-                raysizex = sqrt( pow(testpos.x - start.x, 2) + pow( testpos.y - start.y, 2) );
-                return raysizex;
-            }
-        }
-        its++;
+
+        x += dx;
+        y += dy;
     }
-    
-    return -1;
+
+    // Reached the edge of the screen, return a large distance
+    return 10000;
 }
+
 
 
 int main(int argc, char **argv)
@@ -130,8 +101,8 @@ int main(int argc, char **argv)
                     case SDLK_w:
                     case SDLK_UP:
                         //forward
-                        playerPos.y += sin(angle*M_PI/180);
-                        playerPos.x += cos(angle*M_PI/180);
+                        playerPos.y += SPEED*sin(angle*M_PI/180);
+                        playerPos.x += SPEED*cos(angle*M_PI/180);
                         break;
                     case SDLK_d:
                     case SDLK_RIGHT:
@@ -141,8 +112,8 @@ int main(int argc, char **argv)
                     case SDLK_s:
                     case SDLK_DOWN:
                         //backward
-                        playerPos.y -= sin(angle*M_PI/180);
-                        playerPos.x -= cos(angle*M_PI/180);
+                        playerPos.y -= SPEED*sin(angle*M_PI/180);
+                        playerPos.x -= SPEED*cos(angle*M_PI/180);
                         break;
                     case SDLK_a:
                     case SDLK_LEFT:
