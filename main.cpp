@@ -53,6 +53,7 @@ double raycast(Point start, double angle)
     double fSx = remainderx * cellWidth * cos(angle*M_PI/180);
     double raysizex, raysizey;
     testpos.x += fSx;
+    //something is very very wrong :)))
     if (map[(int)(testpos.x/cellWidth)][(int)(testpos.y/cellHeight)])
     {
         raysizex = sqrt( pow(testpos.x - start.x, 2) + pow( testpos.y - start.y, 2) );
