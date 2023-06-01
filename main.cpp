@@ -1,26 +1,71 @@
 #include <SDL2/SDL.h>
 #include <math.h>
+#include <iostream>
 
 //helper functions
-void drawLine(SDL_Renderer* renderer, int startX, int startY, double angle, int length) 
+
+struct Point 
+{
+    double x,y;
+};
+
+//returns end
+Point drawLine(SDL_Renderer* renderer, int startX, int startY, double angle, int length) 
 {
     SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
     double angleRadians = angle * M_PI / 180.0;
     int endX = startX + static_cast<int>(length * std::cos(angleRadians));
     int endY = startY + static_cast<int>(length * std::sin(angleRadians));
     SDL_RenderDrawLine(renderer, startX, startY, endX, endY);
+    return {endX, endY};
 }
 
 //screen params
-const int SCREEN_WIDTH = 640;
-const int SCREEN_HEIGHT = 480;
+const int SCREEN_WIDTH = 600;
+const int SCREEN_HEIGHT = 600;
 
 //grid params
 const int GRID_ROWS = 8;
 const int GRID_COLS = 8;
-
+bool map[GRID_ROWS][GRID_COLS] = {false};
+int cellWidth = SCREEN_WIDTH / GRID_COLS;
+int cellHeight = SCREEN_HEIGHT / GRID_ROWS;
 const int PLAYER_SIZE = 20;
 const int SPEED = 10;
+
+//dda raycast implementation
+double raycast(Point start, double angle)
+{
+    double angleRadians = angle * M_PI / 180.0;
+
+    double stepSize = 0.1; // Step size for ray casting
+    double x = start.x;
+    double y = start.y;
+
+    double dx = cos(angleRadians) * stepSize;
+    double dy = sin(angleRadians) * stepSize;
+
+    while (x >= 0 && x < SCREEN_WIDTH && y >= 0 && y < SCREEN_HEIGHT)
+    {
+        int gridX = static_cast<int>(x) / cellWidth;
+        int gridY = static_cast<int>(y) / cellHeight;
+
+        if (map[gridY][gridX])
+        {
+            // Hit a wall, calculate the distance from the start point
+            double distance = sqrt(pow(x - start.x, 2) + pow(y - start.y, 2));
+            return distance;
+        }
+
+        x += dx;
+        y += dy;
+    }
+
+    // Reached the edge of the screen, return a large distance
+    return 10000;
+}
+
+
 
 int main(int argc, char **argv)
 {
@@ -31,12 +76,10 @@ int main(int argc, char **argv)
     SDL_CreateWindowAndRenderer(SCREEN_WIDTH, SCREEN_HEIGHT, 0, &window, &renderer);
 
     //stuff for logic
-    struct coord { double x = 0, y = 0; };
-    coord playerPos = { SCREEN_WIDTH/2, SCREEN_HEIGHT/2};
+    Point playerPos = { SCREEN_WIDTH/2, SCREEN_HEIGHT/2 };
     bool quit = false;
-    int cellWidth = SCREEN_WIDTH / GRID_COLS;
-    int cellHeight = SCREEN_HEIGHT / GRID_ROWS;
-    bool map[GRID_ROWS][GRID_COLS] = {false};
+    
+    
     int angle = 0; //player angle
 
     //set up player texture
@@ -58,8 +101,8 @@ int main(int argc, char **argv)
                     case SDLK_w:
                     case SDLK_UP:
                         //forward
-                        playerPos.y += sin(angle*M_PI/180);
-                        playerPos.x += cos(angle*M_PI/180);
+                        playerPos.y += SPEED*sin(angle*M_PI/180);
+                        playerPos.x += SPEED*cos(angle*M_PI/180);
                         break;
                     case SDLK_d:
                     case SDLK_RIGHT:
@@ -69,8 +112,8 @@ int main(int argc, char **argv)
                     case SDLK_s:
                     case SDLK_DOWN:
                         //backward
-                        playerPos.y -= sin(angle*M_PI/180);
-                        playerPos.x -= cos(angle*M_PI/180);
+                        playerPos.y -= SPEED*sin(angle*M_PI/180);
+                        playerPos.x -= SPEED*cos(angle*M_PI/180);
                         break;
                     case SDLK_a:
                     case SDLK_LEFT:
@@ -87,7 +130,7 @@ int main(int argc, char **argv)
                 break;
             }
         }
-        //deal with render updates here
+        //deal with render updates here down
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         SDL_RenderClear(renderer);
         //draw squares
@@ -98,13 +141,16 @@ int main(int argc, char **argv)
                     SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
                     SDL_Rect square = { j * cellWidth, i*cellHeight, cellWidth, cellHeight};
                     SDL_RenderFillRect(renderer, &square);
-                } 
+                }
             }
         }
         //draw player
         SDL_Rect player = {(int)playerPos.x, (int)playerPos.y, PLAYER_SIZE, PLAYER_SIZE};
         SDL_RenderCopyEx(renderer, texture, nullptr, &player, angle, nullptr, SDL_FLIP_NONE);
-        drawLine(renderer, (int)playerPos.x + PLAYER_SIZE/2, (int)playerPos.y + PLAYER_SIZE/2, angle, 50);
+        drawLine(renderer, (int)playerPos.x + PLAYER_SIZE/2, (int)playerPos.y + PLAYER_SIZE/2, angle, raycast({playerPos.x + PLAYER_SIZE/2, playerPos.y + PLAYER_SIZE/2}, angle));
+
+        //raycasting DDA
+
 
         //draw lines
         SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
