@@ -32,40 +32,32 @@ int cellWidth = SCREEN_WIDTH / GRID_COLS;
 int cellHeight = SCREEN_HEIGHT / GRID_ROWS;
 const int PLAYER_SIZE = 20;
 const int SPEED = 10;
-
-//dda raycast implementation
-double raycast(Point start, double angle)
+//DDA raycast implementation
+double raycast(Point start, double angle) 
 {
     double angleRadians = angle * M_PI / 180.0;
-
-    double stepSize = 1; // Step size for ray casting
+    double deltaX = cos(angleRadians);
+    double deltaY = sin(angleRadians);
     double x = start.x;
     double y = start.y;
 
-    double dx = cos(angleRadians) * stepSize;
-    double dy = sin(angleRadians) * stepSize;
-
-    while (x >= 0 && x < SCREEN_WIDTH && y >= 0 && y < SCREEN_HEIGHT)
+    while (x >= 0 && x < SCREEN_WIDTH && y >= 0 && y < SCREEN_HEIGHT) 
     {
         int gridX = static_cast<int>(x) / cellWidth;
         int gridY = static_cast<int>(y) / cellHeight;
 
-        if (map[gridY][gridX])
+        if (map[gridY][gridX]) 
         {
-            // Hit a wall, calculate the distance from the start point
-            double distance = sqrt(pow(x - start.x, 2) + pow(y - start.y, 2));
-            return distance;
+            double distX = x - start.x;
+            double distY = y - start.y;
+            return sqrt(distX * distX + distY * distY);
         }
 
-        x += dx;
-        y += dy;
+        x += deltaX;
+        y += deltaY;
     }
-
-    // Reached the edge of the screen, return a large distance
-    return 10000;
+    return 9999999;  //no collision occurred
 }
-
-
 
 int main(int argc, char **argv)
 {
@@ -108,6 +100,7 @@ int main(int argc, char **argv)
                     case SDLK_RIGHT:
                         //right
                         angle += 1;
+                        angle = fmod(angle, 360); //keep value between 0 and 360
                         break;
                     case SDLK_s:
                     case SDLK_DOWN:
@@ -119,6 +112,7 @@ int main(int argc, char **argv)
                     case SDLK_LEFT:
                         //left
                         angle -= 1;
+                        angle = fmod(angle, 360); 
                         break;
                 }
                 break;
@@ -149,8 +143,6 @@ int main(int argc, char **argv)
         SDL_RenderCopyEx(renderer, texture, nullptr, &player, angle, nullptr, SDL_FLIP_NONE);
         const int FOV = 50;
         for (int i = angle - FOV; i < angle + FOV; i++) drawLine(renderer, (int)playerPos.x + PLAYER_SIZE/2, (int)playerPos.y + PLAYER_SIZE/2, i, raycast({playerPos.x + PLAYER_SIZE/2, playerPos.y + PLAYER_SIZE/2}, i));
-
-        //raycasting DDA
 
 
         //draw lines
