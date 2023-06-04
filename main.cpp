@@ -35,8 +35,8 @@ const int SCREEN_HEIGHT = 600;
 const int MAX_RAY_DISTANCE = (SCREEN_WIDTH > SCREEN_HEIGHT) ? SCREEN_WIDTH : SCREEN_HEIGHT;
 
 //grid params
-const int GRID_ROWS = 8;
-const int GRID_COLS = 8;
+const int GRID_ROWS = 20;
+const int GRID_COLS = 20;
 bool map[GRID_ROWS][GRID_COLS] = {false};
 int cellWidth = SCREEN_WIDTH / GRID_COLS;
 int cellHeight = SCREEN_HEIGHT / GRID_ROWS;
@@ -94,7 +94,7 @@ double raycast(Point start, double angle) {
         }
         if (mapCheck.x >= 0 && mapCheck.x < SCREEN_WIDTH && mapCheck.y >= 0 && mapCheck.y < SCREEN_HEIGHT)
         {
-            if (map[(int)(mapCheck.y/cellWidth)][(int)(mapCheck.x/cellWidth)])
+            if (map[(int)(mapCheck.y/cellHeight)][(int)(mapCheck.x/cellWidth)])
             {
                 Point end = start + rayDir * distance;
                 return hypot(rayDir.x * distance, rayDir.y * distance);
