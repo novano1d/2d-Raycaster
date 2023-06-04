@@ -94,7 +94,7 @@ double raycast(Point start, double angle) {
         {
             if (map[(int)(mapCheck.y/cellHeight)][(int)(mapCheck.x/cellWidth)])
             {
-                Point end = start + rayDir * distance;
+                //Point end = start + rayDir * distance;
                 return hypot(rayDir.x * distance, rayDir.y * distance);
             } 
         }
