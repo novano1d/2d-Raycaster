@@ -188,7 +188,7 @@ int main(int argc, char **argv)
         //draw player
         SDL_Rect player = {(int)playerPos.x, (int)playerPos.y, PLAYER_SIZE, PLAYER_SIZE};
         SDL_RenderCopyEx(renderer, texture, nullptr, &player, angle, nullptr, SDL_FLIP_NONE);
-        const int FOV = 50;
+        const int FOV = 50; //actual fov is 2x this value
         for (int i = angle - FOV; i < angle + FOV; i++) drawLine(renderer, (int)playerPos.x + PLAYER_SIZE/2, (int)playerPos.y + PLAYER_SIZE/2, i, raycast({playerPos.x + PLAYER_SIZE/2, playerPos.y + PLAYER_SIZE/2}, i));
 
 
