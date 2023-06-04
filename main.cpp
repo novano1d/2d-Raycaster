@@ -7,6 +7,14 @@
 struct Point 
 {
     double x,y;
+    Point operator*(const double& a) const
+    {
+        return {a*x, a*y};
+    }
+    Point operator+(const Point& a) const
+    {
+        return {a.x+x, a.y+y};
+    }
 };
 
 //returns end
@@ -24,6 +32,8 @@ Point drawLine(SDL_Renderer* renderer, int startX, int startY, double angle, int
 const int SCREEN_WIDTH = 600;
 const int SCREEN_HEIGHT = 600;
 
+const int MAX_RAY_DISTANCE = (SCREEN_WIDTH > SCREEN_HEIGHT) ? SCREEN_WIDTH : SCREEN_HEIGHT;
+
 //grid params
 const int GRID_ROWS = 8;
 const int GRID_COLS = 8;
@@ -32,32 +42,69 @@ int cellWidth = SCREEN_WIDTH / GRID_COLS;
 int cellHeight = SCREEN_HEIGHT / GRID_ROWS;
 const int PLAYER_SIZE = 20;
 const int SPEED = 10;
+
 //DDA raycast implementation
-double raycast(Point start, double angle) 
-{
+double raycast(Point start, double angle) {
     double angleRadians = angle * M_PI / 180.0;
-    double deltaX = cos(angleRadians);
-    double deltaY = sin(angleRadians);
-    double x = start.x;
-    double y = start.y;
+    //using point as 2d vector to keep clean
+    Point rayDir = { cos(angleRadians), sin(angleRadians) };
+    Point rayUnitStepSize = { sqrt( 1 + (rayDir.y / rayDir.x) * (rayDir.y / rayDir.x)), sqrt( 1 + (rayDir.x / rayDir.y) * (rayDir.x / rayDir.y)) };
 
-    while (x >= 0 && x < SCREEN_WIDTH && y >= 0 && y < SCREEN_HEIGHT) 
+    Point mapCheck = {(int)start.x, (int)start.y};
+    Point rayLength;
+
+    Point step;
+    
+    if (rayDir.x < 0) 
     {
-        int gridX = static_cast<int>(x) / cellWidth;
-        int gridY = static_cast<int>(y) / cellHeight;
-
-        if (map[gridY][gridX]) 
-        {
-            double distX = x - start.x;
-            double distY = y - start.y;
-            return sqrt(distX * distX + distY * distY);
-        }
-
-        x += deltaX;
-        y += deltaY;
+        step.x = -1;
+        rayLength.x = (start.x - mapCheck.x) * rayUnitStepSize.x;
     }
-    return 9999999;  //no collision occurred
+    else
+    {
+        step.x = 1;
+        rayLength.x = (mapCheck.x + 1 - start.x) * rayUnitStepSize.x;
+    } 
+    if (rayDir.y < 0) 
+    {
+        step.y = -1;
+        rayLength.y = (start.y - mapCheck.y) * rayUnitStepSize.y;
+    }
+    else 
+    {
+        step.y = 1;
+        rayLength.y = (mapCheck.y + 1 - start.y) * rayUnitStepSize.y;
+    }
+    bool tileFound = false;
+    double maxDistance = 9999;
+    double distance = 0;
+    while (!tileFound && distance < maxDistance)
+    {
+        if (rayLength.x < rayLength.y)
+        {
+            mapCheck.x += step.x;
+            distance = rayLength.x;
+            rayLength.x += rayUnitStepSize.x;
+        }
+        else
+        {
+            mapCheck.y += step.y;
+            distance = rayLength.y;
+            rayLength.y += rayUnitStepSize.y;
+        }
+        if (mapCheck.x >= 0 && mapCheck.x < SCREEN_WIDTH && mapCheck.y >= 0 && mapCheck.y < SCREEN_HEIGHT)
+        {
+            if (map[(int)(mapCheck.y/cellWidth)][(int)(mapCheck.x/cellWidth)])
+            {
+                Point end = start + rayDir * distance;
+                return hypot(rayDir.x * distance, rayDir.y * distance);
+            } 
+        }
+    }
+    return 1000000;
 }
+
+
 
 int main(int argc, char **argv)
 {
