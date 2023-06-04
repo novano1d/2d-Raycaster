@@ -32,8 +32,6 @@ Point drawLine(SDL_Renderer* renderer, int startX, int startY, double angle, int
 const int SCREEN_WIDTH = 600;
 const int SCREEN_HEIGHT = 600;
 
-const int MAX_RAY_DISTANCE = (SCREEN_WIDTH > SCREEN_HEIGHT) ? SCREEN_WIDTH : SCREEN_HEIGHT;
-
 //grid params
 const int GRID_ROWS = 20;
 const int GRID_COLS = 20;
@@ -76,7 +74,7 @@ double raycast(Point start, double angle) {
         rayLength.y = (mapCheck.y + 1 - start.y) * rayUnitStepSize.y;
     }
     bool tileFound = false;
-    double maxDistance = (SCREEN_WIDTH > SCREEN_HEIGHT) ? SCREEN_WIDTH : SCREEN_HEIGHT;
+    int maxDistance = (SCREEN_WIDTH > SCREEN_HEIGHT) ? SCREEN_WIDTH : SCREEN_HEIGHT;
     double distance = 0;
     while (!tileFound && distance < maxDistance)
     {
