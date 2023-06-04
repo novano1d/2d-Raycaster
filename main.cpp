@@ -76,7 +76,7 @@ double raycast(Point start, double angle) {
         rayLength.y = (mapCheck.y + 1 - start.y) * rayUnitStepSize.y;
     }
     bool tileFound = false;
-    double maxDistance = 9999;
+    double maxDistance = (SCREEN_WIDTH > SCREEN_HEIGHT) ? SCREEN_WIDTH : SCREEN_HEIGHT;
     double distance = 0;
     while (!tileFound && distance < maxDistance)
     {
@@ -101,7 +101,7 @@ double raycast(Point start, double angle) {
             } 
         }
     }
-    return 1000000;
+    return 1000000; //return large number
 }
 
 
